@@ -9,10 +9,11 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 
 /**
- * 排版引擎
+ * 排版引擎：
+ * 排版核心算法，待优化，计划参考<a href="https://www.w3.org/TR/clreq/">中文排版需求</a>及TEX算法
  */
-public abstract class AbstractParagraphLayoutEngine implements ParagraphLayoutEngine {
-    private static final Pattern LINE = Pattern.compile("[\r\n]+");
+public abstract class AbstractChineseTextLayoutEngine implements TextLayoutEngine {
+    private static final Pattern LINE = Pattern.compile("(\r\n|\r|\n)");
 
     @Override
     public void layout(ParagraphBox paragraphBox) {
@@ -37,7 +38,7 @@ public abstract class AbstractParagraphLayoutEngine implements ParagraphLayoutEn
     }
 
     /**
-     * 断行：排版核心算法，待优化，计划参考TEX算法
+     * 断行
      */
     private void breakLine(ParagraphBox paragraphBox, String line) {
         int[] codePoints = line.codePoints().toArray();

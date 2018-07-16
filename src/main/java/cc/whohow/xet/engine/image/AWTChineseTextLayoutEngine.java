@@ -1,10 +1,10 @@
 package cc.whohow.xet.engine.image;
 
-import cc.whohow.xet.layout.AbstractParagraphLayoutEngine;
+import cc.whohow.xet.layout.AbstractChineseTextLayoutEngine;
 
 import java.awt.*;
 
-public class AWTParagraphLayoutEngine extends AbstractParagraphLayoutEngine {
+public class AWTChineseTextLayoutEngine extends AbstractChineseTextLayoutEngine {
     private FontMetrics fontMetrics;
 
     public FontMetrics getFontMetrics() {

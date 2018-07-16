@@ -7,7 +7,7 @@ import java.util.Arrays;
 /**
  * 段落排版引擎
  */
-public interface ParagraphLayoutEngine {
+public interface TextLayoutEngine {
     void layout(ParagraphBox paragraph);
 
     int getCharacterWidth(int codePoint);

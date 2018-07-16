@@ -2,7 +2,7 @@ package cc.whohow.xet.engine.image.handler;
 
 import cc.whohow.xet.box.CharactersBox;
 import cc.whohow.xet.box.ParagraphBox;
-import cc.whohow.xet.engine.image.AWTParagraphLayoutEngine;
+import cc.whohow.xet.engine.image.AWTChineseTextLayoutEngine;
 import cc.whohow.xet.engine.image.ImageXetContext;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.w3c.dom.Element;
@@ -30,7 +30,7 @@ public class ParagraphHandler implements BiConsumer<ImageXetContext, Element> {
         g.setFont(context.getFont(paragraphBox.getFontFamily(), paragraphBox.getFontSize()));
         g.setColor(context.getColor(paragraphBox.getColor()));
 
-        AWTParagraphLayoutEngine layoutEngine = new AWTParagraphLayoutEngine();
+        AWTChineseTextLayoutEngine layoutEngine = new AWTChineseTextLayoutEngine();
         layoutEngine.setFontMetrics(g.getFontMetrics());
         layoutEngine.layout(paragraphBox);
 
