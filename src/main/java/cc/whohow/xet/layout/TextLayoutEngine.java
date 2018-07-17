@@ -1,6 +1,6 @@
 package cc.whohow.xet.layout;
 
-import cc.whohow.xet.box.ParagraphBox;
+import cc.whohow.xet.box.TextBox;
 
 import java.util.Arrays;
 
@@ -8,7 +8,7 @@ import java.util.Arrays;
  * 段落排版引擎
  */
 public interface TextLayoutEngine {
-    void layout(ParagraphBox paragraph);
+    void layout(TextBox textBox);
 
     int getCharacterWidth(int codePoint);
 

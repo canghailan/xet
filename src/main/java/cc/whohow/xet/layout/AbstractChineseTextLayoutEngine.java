@@ -1,7 +1,7 @@
 package cc.whohow.xet.layout;
 
 import cc.whohow.xet.box.CharactersBox;
-import cc.whohow.xet.box.ParagraphBox;
+import cc.whohow.xet.box.TextBox;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,31 +16,31 @@ public abstract class AbstractChineseTextLayoutEngine implements TextLayoutEngin
     private static final Pattern LINE = Pattern.compile("(\r\n|\r|\n)");
 
     @Override
-    public void layout(ParagraphBox paragraphBox) {
-        paragraphBox.setCharactersBoxes(new ArrayList<>());
-        if (paragraphBox.getText() == null || paragraphBox.getText().isEmpty()) {
+    public void layout(TextBox textBox) {
+        textBox.setCharactersBoxes(new ArrayList<>());
+        if (textBox.getText() == null || textBox.getText().isEmpty()) {
             return;
         }
 
-        breakLines(paragraphBox);
-        adjustLineHeight(paragraphBox);
-        adjustLines(paragraphBox);
-        adjustTextAlign(paragraphBox);
+        breakLines(textBox);
+        adjustLineHeight(textBox);
+        adjustLines(textBox);
+        adjustTextAlign(textBox);
     }
 
     /**
      * 断行
      */
-    private void breakLines(ParagraphBox paragraphBox) {
-        for (String line : LINE.split(paragraphBox.getText())) {
-            breakLine(paragraphBox, line);
+    private void breakLines(TextBox textBox) {
+        for (String line : LINE.split(textBox.getText())) {
+            breakLine(textBox, line);
         }
     }
 
     /**
      * 断行
      */
-    private void breakLine(ParagraphBox paragraphBox, String line) {
+    private void breakLine(TextBox textBox, String line) {
         int[] codePoints = line.codePoints().toArray();
         int[] characterWidths = getCharacterWidths(codePoints);
 
@@ -50,7 +50,7 @@ public abstract class AbstractChineseTextLayoutEngine implements TextLayoutEngin
             int lineWidth = 0;
             while (start + length < codePoints.length) {
                 int characterWidth = characterWidths[start + length];
-                if (lineWidth + characterWidth <= paragraphBox.getWidth()) {
+                if (lineWidth + characterWidth <= textBox.getWidth()) {
                     length++;
                     lineWidth += characterWidth;
                 } else {
@@ -70,7 +70,10 @@ public abstract class AbstractChineseTextLayoutEngine implements TextLayoutEngin
             } else {
                 charactersBox.setText(new String(codePoints, start, length));
             }
-            paragraphBox.getCharactersBoxes().add(charactersBox);
+            charactersBox.setColor(textBox.getColor());
+            charactersBox.setFontFamily(textBox.getFontFamily());
+            charactersBox.setFontSize(textBox.getFontSize());
+            textBox.getCharactersBoxes().add(charactersBox);
 
             start += length;
         }
@@ -79,25 +82,25 @@ public abstract class AbstractChineseTextLayoutEngine implements TextLayoutEngin
     /**
      * 调整行高
      */
-    private void adjustLineHeight(ParagraphBox paragraphBox) {
-        if (paragraphBox.getLineHeight() < 0) {
+    private void adjustLineHeight(TextBox textBox) {
+        if (textBox.getLineHeight() < 0) {
             return;
         }
-        for (CharactersBox charactersBox : paragraphBox.getCharactersBoxes()) {
-            charactersBox.setHeight(paragraphBox.getLineHeight());
+        for (CharactersBox charactersBox : textBox.getCharactersBoxes()) {
+            charactersBox.setHeight(textBox.getLineHeight());
         }
     }
 
     /**
      * 调整行位置
      */
-    private void adjustLines(ParagraphBox paragraphBox) {
-        List<CharactersBox> charactersBoxes = paragraphBox.getCharactersBoxes();
+    private void adjustLines(TextBox textBox) {
+        List<CharactersBox> charactersBoxes = textBox.getCharactersBoxes();
         if (charactersBoxes.isEmpty()) {
             return;
         }
         CharactersBox first = charactersBoxes.get(0);
-        first.setY(paragraphBox.getY());
+        first.setY(textBox.getY());
         for (int i = 1; i < charactersBoxes.size(); i++) {
             CharactersBox box = charactersBoxes.get(i);
             CharactersBox prev = charactersBoxes.get(i - 1);
@@ -108,29 +111,29 @@ public abstract class AbstractChineseTextLayoutEngine implements TextLayoutEngin
     /**
      * 调整文字对齐方式
      */
-    private void adjustTextAlign(ParagraphBox paragraphBox) {
-        Objects.requireNonNull(paragraphBox.getTextAlign());
-        switch (paragraphBox.getTextAlign()) {
+    private void adjustTextAlign(TextBox textBox) {
+        Objects.requireNonNull(textBox.getTextAlign());
+        switch (textBox.getTextAlign()) {
             case "left": {
-                for (CharactersBox charactersBox : paragraphBox.getCharactersBoxes()) {
-                    charactersBox.setX(paragraphBox.getX());
+                for (CharactersBox charactersBox : textBox.getCharactersBoxes()) {
+                    charactersBox.setX(textBox.getX());
                 }
                 break;
             }
             case "right": {
-                for (CharactersBox charactersBox : paragraphBox.getCharactersBoxes()) {
-                    charactersBox.setX(paragraphBox.getX() + paragraphBox.getWidth() - charactersBox.getWidth());
+                for (CharactersBox charactersBox : textBox.getCharactersBoxes()) {
+                    charactersBox.setX(textBox.getX() + textBox.getWidth() - charactersBox.getWidth());
                 }
                 break;
             }
             case "center": {
-                for (CharactersBox charactersBox : paragraphBox.getCharactersBoxes()) {
-                    charactersBox.setX(paragraphBox.getX() + (paragraphBox.getWidth() - charactersBox.getWidth()) / 2);
+                for (CharactersBox charactersBox : textBox.getCharactersBoxes()) {
+                    charactersBox.setX(textBox.getX() + (textBox.getWidth() - charactersBox.getWidth()) / 2);
                 }
                 break;
             }
             default: {
-                throw new IllegalArgumentException(paragraphBox.getTextAlign());
+                throw new IllegalArgumentException(textBox.getTextAlign());
             }
         }
     }

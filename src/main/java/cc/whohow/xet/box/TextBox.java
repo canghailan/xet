@@ -3,9 +3,9 @@ package cc.whohow.xet.box;
 import java.util.List;
 
 /**
- * 段落
+ * 文字
  */
-public class ParagraphBox extends Box {
+public class TextBox extends Box {
     private String text;
     private String color;
     private String fontFamily;
