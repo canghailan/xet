@@ -1,15 +1,11 @@
 package cc.whohow.xet.layout;
 
-import cc.whohow.xet.box.TextBox;
-
 import java.util.Arrays;
 
 /**
  * 段落排版引擎
  */
-public interface TextLayoutEngine {
-    void layout(TextBox textBox);
-
+public interface TextLayoutEngine extends LayoutEngine {
     int getCharacterWidth(int codePoint);
 
     default int[] getCharacterWidths(int[] codePoints) {

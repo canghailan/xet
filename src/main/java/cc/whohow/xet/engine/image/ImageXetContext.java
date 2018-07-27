@@ -1,23 +1,22 @@
 package cc.whohow.xet.engine.image;
 
-import cc.whohow.xet.context.BaseXetContext;
+import cc.whohow.xet.context.XetContext;
+import cc.whohow.xet.dom.XetVirtualDOM;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 import java.awt.*;
-import java.util.Map;
-import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-public class ImageXetContext extends BaseXetContext {
+public class ImageXetContext implements XetContext {
+    protected Document document;
     protected Function<String, Font> fontFactory;
     protected Function<String, Color> colorFactory;
     protected Function<String, Image> imageFactory;
-    protected Map<String, BiConsumer<ImageXetContext, Element>> elementHandlers;
     protected Graphics graphics;
 
     public ImageXetContext(Document document) {
-        super(document);
+        this.document = document;
     }
 
     public void setFontFactory(Function<String, Font> fontFactory) {
@@ -30,10 +29,6 @@ public class ImageXetContext extends BaseXetContext {
 
     public void setImageFactory(Function<String, Image> imageFactory) {
         this.imageFactory = imageFactory;
-    }
-
-    public void setElementHandlers(Map<String, BiConsumer<ImageXetContext, Element>> elementHandlers) {
-        this.elementHandlers = elementHandlers;
     }
 
     public Graphics getGraphics() {
@@ -60,20 +55,13 @@ public class ImageXetContext extends BaseXetContext {
         return imageFactory.apply(url);
     }
 
-    public BiConsumer<ImageXetContext, Element> getElementHandler(Element element) {
-        String tagName = element.getTagName();
-        BiConsumer<ImageXetContext, Element> handler = elementHandlers.get(tagName);
-        if (handler != null) {
-            return handler;
-        }
-        return elementHandlers.get("*");
+    @Override
+    public Document getDocument() {
+        return document;
     }
 
-    public void accept(Element element) {
-        getElementHandler(element).accept(this, element);
-    }
-
-    public void accept(Document document) {
-        accept(document.getDocumentElement());
+    @Override
+    public JsonNode getVirtualDOM() {
+        return new XetVirtualDOM(document).get();
     }
 }

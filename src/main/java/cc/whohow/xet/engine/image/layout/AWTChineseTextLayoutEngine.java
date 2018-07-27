@@ -1,4 +1,4 @@
-package cc.whohow.xet.engine.image;
+package cc.whohow.xet.engine.image.layout;
 
 import cc.whohow.xet.layout.AbstractChineseTextLayoutEngine;
 

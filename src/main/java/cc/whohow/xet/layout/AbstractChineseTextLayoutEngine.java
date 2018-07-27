@@ -1,11 +1,10 @@
 package cc.whohow.xet.layout;
 
-import cc.whohow.xet.box.CharactersBox;
-import cc.whohow.xet.box.TextBox;
+import cc.whohow.xet.json.Json;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
 import java.util.regex.Pattern;
 
 /**
@@ -16,31 +15,42 @@ public abstract class AbstractChineseTextLayoutEngine implements TextLayoutEngin
     private static final Pattern LINE = Pattern.compile("(\r\n|\r|\n)");
 
     @Override
-    public void layout(TextBox textBox) {
-        textBox.setCharactersBoxes(new ArrayList<>());
-        if (textBox.getText() == null || textBox.getText().isEmpty()) {
+    public void layout(JsonNode node) {
+        ObjectNode textNode = (ObjectNode) node;
+        String text = textNode.path("text").textValue();
+        if (text == null || text.isEmpty()) {
             return;
         }
 
-        breakLines(textBox);
-        adjustLineHeight(textBox);
-        adjustLines(textBox);
-        adjustTextAlign(textBox);
+        textNode.putArray("textLayout");
+        breakLines(textNode);
+        adjustLineHeight(textNode);
+        adjustLines(textNode);
+        adjustTextAlign(textNode);
     }
 
     /**
      * 断行
      */
-    private void breakLines(TextBox textBox) {
-        for (String line : LINE.split(textBox.getText())) {
-            breakLine(textBox, line);
+    private void breakLines(JsonNode textNode) {
+        String text = textNode.path("text").textValue();
+        for (String line : LINE.split(text)) {
+            breakLine(textNode, line);
         }
     }
 
     /**
      * 断行
      */
-    private void breakLine(TextBox textBox, String line) {
+    private void breakLine(JsonNode textNode, String line) {
+        ArrayNode textLayout = getTextLayout(textNode);
+
+        JsonNode style = getComputedStyle(textNode);
+        int width = style.path("width").intValue();
+        JsonNode color = style.path("color");
+        JsonNode fontFamily = style.path("font-family");
+        JsonNode fontSize = style.path("font-size");
+
         int[] codePoints = line.codePoints().toArray();
         int[] characterWidths = getCharacterWidths(codePoints);
 
@@ -50,7 +60,7 @@ public abstract class AbstractChineseTextLayoutEngine implements TextLayoutEngin
             int lineWidth = 0;
             while (start + length < codePoints.length) {
                 int characterWidth = characterWidths[start + length];
-                if (lineWidth + characterWidth <= textBox.getWidth()) {
+                if (lineWidth + characterWidth <= width) {
                     length++;
                     lineWidth += characterWidth;
                 } else {
@@ -62,18 +72,19 @@ public abstract class AbstractChineseTextLayoutEngine implements TextLayoutEngin
                 lineWidth = characterWidths[start];
             }
 
-            CharactersBox charactersBox = new CharactersBox();
-            charactersBox.setWidth(lineWidth);
-            charactersBox.setHeight(getLineHeight(codePoints, start, length));
+            ObjectNode node = Json.newObject();
             if (start == 0 && length == codePoints.length) {
-                charactersBox.setText(line);
+                node.put("text", line);
             } else {
-                charactersBox.setText(new String(codePoints, start, length));
+                node.put("text", new String(codePoints, start, length));
             }
-            charactersBox.setColor(textBox.getColor());
-            charactersBox.setFontFamily(textBox.getFontFamily());
-            charactersBox.setFontSize(textBox.getFontSize());
-            textBox.getCharactersBoxes().add(charactersBox);
+            ObjectNode computedStyle = Json.newObject();
+            computedStyle.put("width", lineWidth);
+            computedStyle.put("height", getLineHeight(codePoints, start, length));
+            computedStyle.set("color", color);
+            computedStyle.set("font-family", fontFamily);
+            computedStyle.set("font-size", fontSize);
+            textLayout.add(node);
 
             start += length;
         }
@@ -82,59 +93,88 @@ public abstract class AbstractChineseTextLayoutEngine implements TextLayoutEngin
     /**
      * 调整行高
      */
-    private void adjustLineHeight(TextBox textBox) {
-        if (textBox.getLineHeight() < 0) {
+    private void adjustLineHeight(JsonNode textNode) {
+        JsonNode style = getComputedStyle(textNode);
+
+        JsonNode lineHeight = style.path("line-height");
+        if (lineHeight.isMissingNode() || lineHeight.isNull()) {
             return;
         }
-        for (CharactersBox charactersBox : textBox.getCharactersBoxes()) {
-            charactersBox.setHeight(textBox.getLineHeight());
+        for (JsonNode node : textNode.path("textLayout")) {
+            ObjectNode computedStyle = (ObjectNode) node.path("computedStyle");
+            computedStyle.set("line-height", lineHeight);
         }
     }
 
     /**
      * 调整行位置
      */
-    private void adjustLines(TextBox textBox) {
-        List<CharactersBox> charactersBoxes = textBox.getCharactersBoxes();
-        if (charactersBoxes.isEmpty()) {
+    private void adjustLines(JsonNode textNode) {
+        ArrayNode textLayout = getTextLayout(textNode);
+        if (textLayout.size() == 0) {
             return;
         }
-        CharactersBox first = charactersBoxes.get(0);
-        first.setY(textBox.getY());
-        for (int i = 1; i < charactersBoxes.size(); i++) {
-            CharactersBox box = charactersBoxes.get(i);
-            CharactersBox prev = charactersBoxes.get(i - 1);
-            box.setY(prev.getY() + prev.getHeight());
+
+        ObjectNode computedStyle = getComputedStyle(textNode);
+
+        int y = computedStyle.path("y").intValue();
+        JsonNode first = textLayout.get(0);
+        getComputedStyle(first).put("y", y);
+        for (int i = 1; i < textLayout.size(); i++) {
+            y += getComputedStyle(textLayout.get(i - 1))
+                    .path("height").intValue();
+
+            getComputedStyle(textLayout.get(i))
+                    .put("y", y);
         }
     }
 
     /**
      * 调整文字对齐方式
      */
-    private void adjustTextAlign(TextBox textBox) {
-        Objects.requireNonNull(textBox.getTextAlign());
-        switch (textBox.getTextAlign()) {
+    private void adjustTextAlign(JsonNode textNode) {
+        ObjectNode style = getComputedStyle(textNode);
+        JsonNode textAlign = style.path("text-align");
+        if (textAlign.isMissingNode() || textAlign.isNull()) {
+            throw new IllegalArgumentException("text-align: null");
+        }
+        switch (textAlign.textValue()) {
             case "left": {
-                for (CharactersBox charactersBox : textBox.getCharactersBoxes()) {
-                    charactersBox.setX(textBox.getX());
+                JsonNode x = style.path("x");
+                for (JsonNode line : getTextLayout(textNode)) {
+                    getComputedStyle(line).set("x", x);
                 }
                 break;
             }
             case "right": {
-                for (CharactersBox charactersBox : textBox.getCharactersBoxes()) {
-                    charactersBox.setX(textBox.getX() + textBox.getWidth() - charactersBox.getWidth());
+                int x = style.path("x").intValue();
+                int width = style.path("width").intValue();
+                for (JsonNode line : getTextLayout(textNode)) {
+                    ObjectNode lineStyle = getComputedStyle(line);
+                    lineStyle.put("x", x + width - line.path("width").intValue());
                 }
                 break;
             }
             case "center": {
-                for (CharactersBox charactersBox : textBox.getCharactersBoxes()) {
-                    charactersBox.setX(textBox.getX() + (textBox.getWidth() - charactersBox.getWidth()) / 2);
+                int x = style.path("x").intValue();
+                int width = style.path("width").intValue();
+                for (JsonNode line : getTextLayout(textNode)) {
+                    ObjectNode lineStyle = getComputedStyle(line);
+                    lineStyle.put("x", x + (width - line.path("width").intValue()) / 2);
                 }
                 break;
             }
             default: {
-                throw new IllegalArgumentException(textBox.getTextAlign());
+                throw new IllegalArgumentException("text-align: " + textAlign.textValue());
             }
         }
+    }
+
+    protected ArrayNode getTextLayout(JsonNode node) {
+        return (ArrayNode) node.path("textLayout");
+    }
+
+    protected ObjectNode getComputedStyle(JsonNode node) {
+        return (ObjectNode) node.path("computedStyle");
     }
 }
