@@ -1,10 +1,9 @@
-package cc.whohow.xet.dom;
+package cc.whohow.xet.model;
 
-import cc.whohow.xet.json.Json;
+import cc.whohow.xet.util.Json;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.node.TextNode;
 import org.w3c.dom.*;
 
 import java.util.HashMap;
@@ -13,15 +12,21 @@ import java.util.Map;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
-public class XetVirtualDOM implements Supplier<JsonNode> {
+public class VirtualDOM implements Supplier<JsonNode> {
     protected static final Pattern SPACES = Pattern.compile("\\s+");
 
-    protected final Document document;
-    protected JsonNode virtualDOM;
+    protected Document document;
+    protected JsonNode renderTree;
     protected Map<String, ObjectNode> styles;
 
-    public XetVirtualDOM(Document document) {
+    public Document getDocument() {
+        return document;
+    }
+
+    public void setDocument(Document document) {
         this.document = document;
+        this.renderTree = null;
+        this.styles = null;
     }
 
     public JsonNode visit(Element element) {
@@ -73,12 +78,12 @@ public class XetVirtualDOM implements Supplier<JsonNode> {
     }
 
     protected void setStyle(Element element, ObjectNode node) {
-        String styleExpr = node.path("props").path("style").textValue();
-        if (styleExpr == null || styleExpr.isEmpty()) {
+        String expression = node.path("props").path("style").textValue();
+        if (expression == null || expression.isEmpty()) {
             node.set("computedStyle", Json.newObject());
             return;
         }
-        ObjectNode style =  SPACES.splitAsStream(styleExpr)
+        ObjectNode style =  SPACES.splitAsStream(expression)
                 .map(styles::get)
                 .reduce(Json.newObject(), Json::assign);
         if (style.size() == 0) {
@@ -91,12 +96,11 @@ public class XetVirtualDOM implements Supplier<JsonNode> {
 
     @Override
     public JsonNode get() {
-        if (virtualDOM == null) {
+        if (renderTree == null) {
             styles = parseStyles();
-            virtualDOM = visit(document.getDocumentElement());
+            renderTree = visit(document.getDocumentElement());
         }
-        System.out.println(virtualDOM);
-        return virtualDOM;
+        return renderTree;
     }
 
     protected Map<String, ObjectNode> parseStyles() {

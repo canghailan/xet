@@ -1,4 +1,4 @@
-package cc.whohow.xet.context;
+package cc.whohow.xet.engine.awt.model;
 
 import java.awt.*;
 import java.util.function.Function;
@@ -6,7 +6,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ColorFactory implements Function<String, Color> {
-    private static final Pattern HEX = Pattern.compile("#(?<r>[0-9a-f]{2})(?<g>[0-9a-f]{2})(?<b>[0-9a-f]{2})", Pattern.CASE_INSENSITIVE);
+    protected static final Pattern HEX = Pattern.compile("#(?<r>[0-9a-f]{2})(?<g>[0-9a-f]{2})(?<b>[0-9a-f]{2})", Pattern.CASE_INSENSITIVE);
 
     @Override
     public Color apply(String color) {

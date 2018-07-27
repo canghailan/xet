@@ -1,33 +1,38 @@
 package cc.whohow.xet.layout;
 
-import java.util.Arrays;
+import com.fasterxml.jackson.databind.JsonNode;
 
 /**
- * 段落排版引擎
+ * 文本排版引擎
  */
-public interface TextLayoutEngine extends LayoutEngine {
-    int getCharacterWidth(int codePoint);
+public interface TextLayoutEngine<CONTEXT, FONT> extends LayoutEngine<CONTEXT> {
+    FONT getFont(CONTEXT context, JsonNode node);
 
-    default int[] getCharacterWidths(int[] codePoints) {
-        return getCharacterWidths(codePoints, 0, codePoints.length);
+    int getCharacterWidth(FONT font, int codePoint);
+
+    default int[] getCharacterWidths(FONT font, int[] codePoints) {
+        return getCharacterWidths(font, codePoints, 0, codePoints.length);
     }
 
-    default int[] getCharacterWidths(int[] codePoints, int offset, int length) {
-        return Arrays.stream(codePoints, offset, length - offset)
-                .map(this::getCharacterWidth)
-                .toArray();
+    default int[] getCharacterWidths(FONT font, int[] codePoints, int offset, int length) {
+        int[] characterWidths = new int[length];
+        for (int  i = 0, j = offset; i < characterWidths.length; i++, j++) {
+            characterWidths[i] = getCharacterWidth(font, codePoints[j]);
+        }
+        return characterWidths;
     }
 
-    int getCharacterHeight(int codePoint);
+    int getCharacterHeight(FONT font, int codePoint);
 
-    default int getLineHeight(int[] codePoints) {
-        return getLineHeight(codePoints, 0, codePoints.length);
+    default int getCharactersHeight(FONT font, int[] codePoints) {
+        return getCharactersHeight(font, codePoints, 0, codePoints.length);
     }
 
-    default int getLineHeight(int[] codePoints, int offset, int length) {
-        return Arrays.stream(codePoints, offset, length - offset)
-                .map(this::getCharacterHeight)
-                .max()
-                .orElse(-1);
+    default int getCharactersHeight(FONT font, int[] codePoints, int offset, int length) {
+        int lineHeight = 0;
+        for (int  i = offset; i < offset + length; i++) {
+            lineHeight = Integer.max(lineHeight, getCharacterHeight(font, codePoints[i]));
+        }
+        return lineHeight;
     }
 }

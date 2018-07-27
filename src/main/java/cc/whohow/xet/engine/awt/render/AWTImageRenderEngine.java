@@ -1,16 +1,16 @@
-package cc.whohow.xet.engine.image.render;
+package cc.whohow.xet.engine.awt.render;
 
-import cc.whohow.xet.engine.image.ImageXetContext;
+import cc.whohow.xet.engine.awt.AWTXetContext;
+import cc.whohow.xet.render.RenderEngine;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.awt.*;
-import java.util.function.BiConsumer;
 
-public class ImageRender implements BiConsumer<ImageXetContext, JsonNode> {
+public class AWTImageRenderEngine<CONTEXT extends AWTXetContext> implements RenderEngine<CONTEXT> {
     @Override
-    public void accept(ImageXetContext context, JsonNode img) {
-        JsonNode props = img.path("props");
-        JsonNode style = img.path("computedStyle");
+    public void render(CONTEXT context, JsonNode imageNode) {
+        JsonNode props = imageNode.path("props");
+        JsonNode style = imageNode.path("computedStyle");
 
         int x = style.path("x").intValue();
         int y = style.path("y").intValue();

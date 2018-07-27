@@ -1,4 +1,4 @@
-package cc.whohow.xet.context;
+package cc.whohow.xet;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.w3c.dom.Document;
@@ -6,5 +6,9 @@ import org.w3c.dom.Document;
 public interface XetContext {
     Document getDocument();
 
-    JsonNode getVirtualDOM();
+    JsonNode getRenderTree();
+
+    void layout();
+
+    void render();
 }

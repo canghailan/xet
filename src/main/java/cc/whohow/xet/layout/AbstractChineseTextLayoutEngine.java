@@ -1,6 +1,7 @@
 package cc.whohow.xet.layout;
 
-import cc.whohow.xet.json.Json;
+import cc.whohow.xet.model.FontMeta;
+import cc.whohow.xet.util.Json;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -11,11 +12,11 @@ import java.util.regex.Pattern;
  * 排版引擎：
  * 排版核心算法，待优化，计划参考<a href="https://www.w3.org/TR/clreq/">中文排版需求</a>及TEX算法
  */
-public abstract class AbstractChineseTextLayoutEngine implements TextLayoutEngine {
+public abstract class AbstractChineseTextLayoutEngine<CONTEXT, FONT> implements TextLayoutEngine<CONTEXT, FONT> {
     private static final Pattern LINE = Pattern.compile("(\r\n|\r|\n)");
 
     @Override
-    public void layout(JsonNode node) {
+    public void layout(CONTEXT context, JsonNode node) {
         ObjectNode textNode = (ObjectNode) node;
         String text = textNode.path("text").textValue();
         if (text == null || text.isEmpty()) {
@@ -23,7 +24,7 @@ public abstract class AbstractChineseTextLayoutEngine implements TextLayoutEngin
         }
 
         textNode.putArray("textLayout");
-        breakLines(textNode);
+        breakLines(textNode, getFont(context, textNode));
         adjustLineHeight(textNode);
         adjustLines(textNode);
         adjustTextAlign(textNode);
@@ -32,17 +33,17 @@ public abstract class AbstractChineseTextLayoutEngine implements TextLayoutEngin
     /**
      * 断行
      */
-    private void breakLines(JsonNode textNode) {
+    private void breakLines(JsonNode textNode, FONT font) {
         String text = textNode.path("text").textValue();
         for (String line : LINE.split(text)) {
-            breakLine(textNode, line);
+            breakLine(textNode, line, font);
         }
     }
 
     /**
      * 断行
      */
-    private void breakLine(JsonNode textNode, String line) {
+    private void breakLine(JsonNode textNode, String line, FONT font) {
         ArrayNode textLayout = getTextLayout(textNode);
 
         JsonNode style = getComputedStyle(textNode);
@@ -52,7 +53,7 @@ public abstract class AbstractChineseTextLayoutEngine implements TextLayoutEngin
         JsonNode fontSize = style.path("font-size");
 
         int[] codePoints = line.codePoints().toArray();
-        int[] characterWidths = getCharacterWidths(codePoints);
+        int[] characterWidths = getCharacterWidths(font, codePoints);
 
         int start = 0;
         while (start < codePoints.length) {
@@ -73,6 +74,7 @@ public abstract class AbstractChineseTextLayoutEngine implements TextLayoutEngin
             }
 
             ObjectNode node = Json.newObject();
+            node.put("tagName", "text");
             if (start == 0 && length == codePoints.length) {
                 node.put("text", line);
             } else {
@@ -80,10 +82,11 @@ public abstract class AbstractChineseTextLayoutEngine implements TextLayoutEngin
             }
             ObjectNode computedStyle = Json.newObject();
             computedStyle.put("width", lineWidth);
-            computedStyle.put("height", getLineHeight(codePoints, start, length));
+            computedStyle.put("height", getCharactersHeight(font, codePoints, start, length));
             computedStyle.set("color", color);
             computedStyle.set("font-family", fontFamily);
             computedStyle.set("font-size", fontSize);
+            node.set("computedStyle", computedStyle);
             textLayout.add(node);
 
             start += length;
@@ -101,7 +104,7 @@ public abstract class AbstractChineseTextLayoutEngine implements TextLayoutEngin
             return;
         }
         for (JsonNode node : textNode.path("textLayout")) {
-            ObjectNode computedStyle = (ObjectNode) node.path("computedStyle");
+            ObjectNode computedStyle = getComputedStyle(node);
             computedStyle.set("line-height", lineHeight);
         }
     }
@@ -177,4 +180,14 @@ public abstract class AbstractChineseTextLayoutEngine implements TextLayoutEngin
     protected ObjectNode getComputedStyle(JsonNode node) {
         return (ObjectNode) node.path("computedStyle");
     }
+
+    @Override
+    public FONT getFont(CONTEXT context, JsonNode node) {
+        FontMeta fontMeta = new FontMeta.Builder()
+                .withStyle(getComputedStyle(node))
+                .get();
+        return getFont(context, fontMeta);
+    }
+
+    protected abstract FONT getFont(CONTEXT context, FontMeta fontMeta);
 }

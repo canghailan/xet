@@ -1,4 +1,4 @@
-package cc.whohow.xet.context;
+package cc.whohow.xet.engine.awt.model;
 
 import java.awt.*;
 import java.io.IOException;
@@ -8,7 +8,7 @@ import java.lang.reflect.UndeclaredThrowableException;
 import java.net.URL;
 import java.util.function.Function;
 
-public class FontFactory implements Function<String, Font> {
+public class FontFamilyFactory implements Function<String, Font> {
     @Override
     public Font apply(String url) {
         try (InputStream stream = new URL(url).openStream()) {
