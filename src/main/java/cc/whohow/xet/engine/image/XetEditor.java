@@ -8,9 +8,6 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -75,7 +72,7 @@ public class XetEditor implements Runnable {
     }
 
     public static void main(String[] args) throws Exception {
-        UIManager.setLookAndFeel(getPreferredLookAndFeel());
+//        UIManager.setLookAndFeel(getPreferredLookAndFeel());
         SwingUtilities.invokeLater(() -> new XetEditor().run());
     }
 
@@ -92,15 +89,6 @@ public class XetEditor implements Runnable {
     public void run() {
         frame.setVisible(true);
         componentResized(null);
-
-        SwingUtilities.invokeLater(() -> {
-            try {
-                String text = new String(Files.readAllBytes(Paths.get("test.xml")), StandardCharsets.UTF_8);
-                editorPane.setText(text);
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
-        });
     }
 
     public void componentResized(ComponentEvent e) {

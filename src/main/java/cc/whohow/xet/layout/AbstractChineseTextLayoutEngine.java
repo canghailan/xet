@@ -72,6 +72,7 @@ public abstract class AbstractChineseTextLayoutEngine<CONTEXT, FONT> implements 
                 length = 1;
                 lineWidth = characterWidths[start];
             }
+            int height = getCharactersHeight(font, codePoints, start, length);
 
             ObjectNode node = Json.newObject();
             node.put("tagName", "text");
@@ -82,7 +83,8 @@ public abstract class AbstractChineseTextLayoutEngine<CONTEXT, FONT> implements 
             }
             ObjectNode computedStyle = Json.newObject();
             computedStyle.put("width", lineWidth);
-            computedStyle.put("height", getCharactersHeight(font, codePoints, start, length));
+            computedStyle.put("height", height);
+            computedStyle.put("line-height", height);
             computedStyle.set("color", color);
             computedStyle.set("font-family", fontFamily);
             computedStyle.set("font-size", fontSize);
@@ -103,9 +105,8 @@ public abstract class AbstractChineseTextLayoutEngine<CONTEXT, FONT> implements 
         if (lineHeight.isMissingNode() || lineHeight.isNull()) {
             return;
         }
-        for (JsonNode node : textNode.path("textLayout")) {
-            ObjectNode computedStyle = getComputedStyle(node);
-            computedStyle.set("line-height", lineHeight);
+        for (JsonNode node : getTextLayout(textNode)) {
+            getComputedStyle(node).set("line-height", lineHeight);
         }
     }
 
@@ -119,13 +120,12 @@ public abstract class AbstractChineseTextLayoutEngine<CONTEXT, FONT> implements 
         }
 
         ObjectNode computedStyle = getComputedStyle(textNode);
-
         int y = computedStyle.path("y").intValue();
         JsonNode first = textLayout.get(0);
         getComputedStyle(first).put("y", y);
         for (int i = 1; i < textLayout.size(); i++) {
             y += getComputedStyle(textLayout.get(i - 1))
-                    .path("height").intValue();
+                    .path("line-height").intValue();
 
             getComputedStyle(textLayout.get(i))
                     .put("y", y);
@@ -137,10 +137,12 @@ public abstract class AbstractChineseTextLayoutEngine<CONTEXT, FONT> implements 
      */
     private void adjustTextAlign(JsonNode textNode) {
         ObjectNode style = getComputedStyle(textNode);
+
         JsonNode textAlign = style.path("text-align");
         if (textAlign.isMissingNode() || textAlign.isNull()) {
             throw new IllegalArgumentException("text-align: null");
         }
+
         switch (textAlign.textValue()) {
             case "left": {
                 JsonNode x = style.path("x");
@@ -154,7 +156,7 @@ public abstract class AbstractChineseTextLayoutEngine<CONTEXT, FONT> implements 
                 int width = style.path("width").intValue();
                 for (JsonNode line : getTextLayout(textNode)) {
                     ObjectNode lineStyle = getComputedStyle(line);
-                    lineStyle.put("x", x + width - line.path("width").intValue());
+                    lineStyle.put("x", x + width - lineStyle.path("width").intValue());
                 }
                 break;
             }
@@ -163,7 +165,7 @@ public abstract class AbstractChineseTextLayoutEngine<CONTEXT, FONT> implements 
                 int width = style.path("width").intValue();
                 for (JsonNode line : getTextLayout(textNode)) {
                     ObjectNode lineStyle = getComputedStyle(line);
-                    lineStyle.put("x", x + (width - line.path("width").intValue()) / 2);
+                    lineStyle.put("x", x + (width - lineStyle.path("width").intValue()) / 2);
                 }
                 break;
             }
