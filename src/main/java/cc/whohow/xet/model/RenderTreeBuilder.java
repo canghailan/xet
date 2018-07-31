@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
-public class VirtualDOM implements Supplier<JsonNode> {
+public class RenderTreeBuilder implements Supplier<JsonNode> {
     protected static final Pattern SPACES = Pattern.compile("\\s+");
 
     protected Document document;
@@ -83,7 +83,7 @@ public class VirtualDOM implements Supplier<JsonNode> {
             node.set("computedStyle", Json.newObject());
             return;
         }
-        ObjectNode style =  SPACES.splitAsStream(expression)
+        ObjectNode style = SPACES.splitAsStream(expression)
                 .map(styles::get)
                 .reduce(Json.newObject(), Json::assign);
         if (style.size() == 0) {

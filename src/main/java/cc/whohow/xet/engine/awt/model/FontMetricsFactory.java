@@ -16,8 +16,6 @@ public class FontMetricsFactory implements Function<FontMeta, FontMetrics> {
 
     @Override
     public FontMetrics apply(FontMeta fontMeta) {
-        Font font = fontFactory.apply(fontMeta)
-                .deriveFont((float) fontMeta.getFontSize());
         return graphics.getFontMetrics(fontFactory.apply(fontMeta));
     }
 }

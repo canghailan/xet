@@ -18,8 +18,12 @@ public class FontMeta {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {return true;}
-        if (o == null || getClass() != o.getClass()) {return false;}
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         FontMeta fontMeta = (FontMeta) o;
         return fontSize == fontMeta.fontSize &&
                 Objects.equals(fontFamily, fontMeta.fontFamily);
@@ -37,6 +41,7 @@ public class FontMeta {
             fontMeta.fontFamily = fontFamily;
             return this;
         }
+
         public Builder withFontSize(int fontSize) {
             fontMeta.fontSize = fontSize;
             return this;

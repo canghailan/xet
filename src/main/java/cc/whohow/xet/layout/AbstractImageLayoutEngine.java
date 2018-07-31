@@ -1,24 +1,18 @@
 package cc.whohow.xet.layout;
 
+import cc.whohow.xet.model.Styles;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public abstract class AbstractImageLayoutEngine<CONTEXT, IMAGE> implements ImageLayoutEngine<CONTEXT, IMAGE> {
     @Override
     public void layout(CONTEXT context, JsonNode node) {
-        ObjectNode style = getComputedStyle(node);
-        JsonNode width = style.path("width");
-        JsonNode height = style.path("height");
-        if (width.isMissingNode() || width.isNull() ||
-                height.isMissingNode() || height.isNull()) {
+        ObjectNode style = Styles.getComputedStyle(node);
+        if (Styles.WIDTH.isNull(style) || Styles.HEIGHT.isNull(style)) {
             IMAGE image = getImage(context, node);
-            style.put("width", getWidth(image));
-            style.put("height", getHeight(image));
+            Styles.WIDTH.setInt(style, getWidth(image));
+            Styles.HEIGHT.setInt(style, getHeight(image));
         }
-    }
-
-    protected ObjectNode getComputedStyle(JsonNode node) {
-        return (ObjectNode) node.path("computedStyle");
     }
 
     protected String getSrc(JsonNode node) {

@@ -1,20 +1,20 @@
 package cc.whohow.xet.engine.image;
 
 import cc.whohow.xet.AbstractXetEngine;
-import cc.whohow.xet.layout.ComponentLayoutEngine;
-import cc.whohow.xet.model.VirtualDOM;
-import cc.whohow.xet.render.ComponentRenderEngine;
-import cc.whohow.xet.render.RenderEngine;
-import cc.whohow.xet.util.CacheableFactory;
+import cc.whohow.xet.engine.awt.layout.AWTChineseTextLayoutEngine;
+import cc.whohow.xet.engine.awt.layout.AWTImageLayoutEngine;
 import cc.whohow.xet.engine.awt.model.ColorFactory;
 import cc.whohow.xet.engine.awt.model.FontFamilyFactory;
 import cc.whohow.xet.engine.awt.model.ImageFactory;
-import cc.whohow.xet.engine.awt.layout.AWTChineseTextLayoutEngine;
-import cc.whohow.xet.engine.awt.layout.AWTImageLayoutEngine;
 import cc.whohow.xet.engine.awt.render.AWTImageRenderEngine;
 import cc.whohow.xet.engine.awt.render.AWTTextRenderEngine;
-import cc.whohow.xet.layout.LayoutEngine;
+import cc.whohow.xet.layout.ComponentLayoutEngine;
+import cc.whohow.xet.model.RenderTreeBuilder;
+import cc.whohow.xet.model.Styles;
+import cc.whohow.xet.render.ComponentRenderEngine;
+import cc.whohow.xet.util.CacheableFactory;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.w3c.dom.Document;
 
 import java.awt.*;
@@ -44,13 +44,13 @@ public class ImageXetEngine extends AbstractXetEngine<BufferedImage> {
 
     @Override
     public BufferedImage process(Document document) {
-        VirtualDOM dom = new VirtualDOM();
-        dom.setDocument(document);
-        JsonNode node = dom.get();
+        RenderTreeBuilder renderTreeBuilder = new RenderTreeBuilder();
+        renderTreeBuilder.setDocument(document);
+        JsonNode renderTree = renderTreeBuilder.get();
 
-        JsonNode style = node.path("style");
-        int width = style.path("width").intValue();
-        int height = style.path("height").intValue();
+        ObjectNode style = Styles.getStyle(renderTree);
+        int width = Styles.WIDTH.getInt(style);
+        int height = Styles.HEIGHT.getInt(style);
 
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         Graphics2D g = image.createGraphics();
@@ -64,7 +64,7 @@ public class ImageXetEngine extends AbstractXetEngine<BufferedImage> {
             context.setLayoutEngine(layoutEngine);
             context.setRenderEngine(renderEngine);
             context.setDocument(document);
-            context.setRenderTree(node);
+            context.setRenderTree(renderTree);
 
             context.layout();
             context.render();

@@ -5,7 +5,6 @@ import cc.whohow.xet.layout.AbstractChineseTextLayoutEngine;
 import cc.whohow.xet.model.FontMeta;
 
 import java.awt.*;
-import java.util.function.Function;
 
 public class AWTChineseTextLayoutEngine<CONTEXT extends AWTXetContext> extends AbstractChineseTextLayoutEngine<CONTEXT, FontMetrics> {
     @Override

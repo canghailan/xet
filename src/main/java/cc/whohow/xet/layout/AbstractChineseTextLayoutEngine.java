@@ -1,6 +1,7 @@
 package cc.whohow.xet.layout;
 
 import cc.whohow.xet.model.FontMeta;
+import cc.whohow.xet.model.Styles;
 import cc.whohow.xet.util.Json;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -18,7 +19,7 @@ public abstract class AbstractChineseTextLayoutEngine<CONTEXT, FONT> implements 
     @Override
     public void layout(CONTEXT context, JsonNode node) {
         ObjectNode textNode = (ObjectNode) node;
-        String text = textNode.path("text").textValue();
+        String text = node.path("text").textValue();
         if (text == null || text.isEmpty()) {
             return;
         }
@@ -28,12 +29,14 @@ public abstract class AbstractChineseTextLayoutEngine<CONTEXT, FONT> implements 
         adjustLineHeight(textNode);
         adjustLines(textNode);
         adjustTextAlign(textNode);
+
+        updateLayout(textNode);
     }
 
     /**
      * 断行
      */
-    private void breakLines(JsonNode textNode, FONT font) {
+    protected void breakLines(JsonNode textNode, FONT font) {
         String text = textNode.path("text").textValue();
         for (String line : LINE.split(text)) {
             breakLine(textNode, line, font);
@@ -43,14 +46,14 @@ public abstract class AbstractChineseTextLayoutEngine<CONTEXT, FONT> implements 
     /**
      * 断行
      */
-    private void breakLine(JsonNode textNode, String line, FONT font) {
+    protected void breakLine(JsonNode textNode, String line, FONT font) {
         ArrayNode textLayout = getTextLayout(textNode);
 
-        JsonNode style = getComputedStyle(textNode);
-        int width = style.path("width").intValue();
-        JsonNode color = style.path("color");
-        JsonNode fontFamily = style.path("font-family");
-        JsonNode fontSize = style.path("font-size");
+        ObjectNode style = Styles.getComputedStyle(textNode);
+        int width = Styles.WIDTH.getInt(style);
+        JsonNode color = Styles.COLOR.getValue(style);
+        JsonNode fontFamily = Styles.FONT_FAMILY.getValue(style);
+        JsonNode fontSize = Styles.FONT_SIZE.getValue(style);
 
         int[] codePoints = line.codePoints().toArray();
         int[] characterWidths = getCharacterWidths(font, codePoints);
@@ -82,12 +85,12 @@ public abstract class AbstractChineseTextLayoutEngine<CONTEXT, FONT> implements 
                 node.put("text", new String(codePoints, start, length));
             }
             ObjectNode computedStyle = Json.newObject();
-            computedStyle.put("width", lineWidth);
-            computedStyle.put("height", height);
-            computedStyle.put("line-height", height);
-            computedStyle.set("color", color);
-            computedStyle.set("font-family", fontFamily);
-            computedStyle.set("font-size", fontSize);
+            Styles.WIDTH.setInt(computedStyle, lineWidth);
+            Styles.HEIGHT.setInt(computedStyle, height);
+            Styles.LINE_HEIGHT.setInt(computedStyle, height);
+            Styles.COLOR.setValue(computedStyle, color);
+            Styles.FONT_FAMILY.setValue(computedStyle, fontFamily);
+            Styles.FONT_SIZE.setValue(computedStyle, fontSize);
             node.set("computedStyle", computedStyle);
             textLayout.add(node);
 
@@ -98,80 +101,92 @@ public abstract class AbstractChineseTextLayoutEngine<CONTEXT, FONT> implements 
     /**
      * 调整行高
      */
-    private void adjustLineHeight(JsonNode textNode) {
-        JsonNode style = getComputedStyle(textNode);
-
-        JsonNode lineHeight = style.path("line-height");
-        if (lineHeight.isMissingNode() || lineHeight.isNull()) {
+    protected void adjustLineHeight(JsonNode textNode) {
+        ObjectNode style = Styles.getComputedStyle(textNode);
+        if (Styles.LINE_HEIGHT.isNull(style)) {
             return;
         }
+        JsonNode lineHeight = Styles.LINE_HEIGHT.getValue(style);
         for (JsonNode node : getTextLayout(textNode)) {
-            getComputedStyle(node).set("line-height", lineHeight);
+            Styles.LINE_HEIGHT.setValue(Styles.getComputedStyle(node), lineHeight);
         }
     }
 
     /**
      * 调整行位置
      */
-    private void adjustLines(JsonNode textNode) {
+    protected void adjustLines(JsonNode textNode) {
         ArrayNode textLayout = getTextLayout(textNode);
         if (textLayout.size() == 0) {
             return;
         }
 
-        ObjectNode computedStyle = getComputedStyle(textNode);
-        int y = computedStyle.path("y").intValue();
-        JsonNode first = textLayout.get(0);
-        getComputedStyle(first).put("y", y);
-        for (int i = 1; i < textLayout.size(); i++) {
-            y += getComputedStyle(textLayout.get(i - 1))
-                    .path("line-height").intValue();
+        ObjectNode computedStyle = Styles.getComputedStyle(textNode);
+        int y = Styles.Y.getInt(computedStyle);
+        for (JsonNode line : getTextLayout(textNode)) {
+            ObjectNode lineStyle = Styles.getComputedStyle(line);
 
-            getComputedStyle(textLayout.get(i))
-                    .put("y", y);
+            Styles.Y.setInt(lineStyle, y);
+
+            y += Styles.LINE_HEIGHT.getInt(lineStyle);
         }
     }
 
     /**
      * 调整文字对齐方式
      */
-    private void adjustTextAlign(JsonNode textNode) {
-        ObjectNode style = getComputedStyle(textNode);
+    protected void adjustTextAlign(JsonNode textNode) {
+        ObjectNode style = Styles.getComputedStyle(textNode);
 
-        JsonNode textAlign = style.path("text-align");
-        if (textAlign.isMissingNode() || textAlign.isNull()) {
+        if (Styles.TEXT_ALIGN.isNull(style)) {
             throw new IllegalArgumentException("text-align: null");
         }
 
-        switch (textAlign.textValue()) {
+        String textAlign = Styles.TEXT_ALIGN.get(style);
+        switch (textAlign) {
             case "left": {
-                JsonNode x = style.path("x");
+                JsonNode x = Styles.X.getValue(style);
                 for (JsonNode line : getTextLayout(textNode)) {
-                    getComputedStyle(line).set("x", x);
+                    Styles.X.setValue(Styles.getComputedStyle(line), x);
                 }
                 break;
             }
             case "right": {
-                int x = style.path("x").intValue();
-                int width = style.path("width").intValue();
+                int x = Styles.X.getInt(style);
+                int width = Styles.WIDTH.getInt(style);
                 for (JsonNode line : getTextLayout(textNode)) {
-                    ObjectNode lineStyle = getComputedStyle(line);
-                    lineStyle.put("x", x + width - lineStyle.path("width").intValue());
+                    ObjectNode lineStyle = Styles.getComputedStyle(line);
+                    Styles.X.setInt(lineStyle, x + width - Styles.WIDTH.getInt(lineStyle));
                 }
                 break;
             }
             case "center": {
-                int x = style.path("x").intValue();
-                int width = style.path("width").intValue();
+                int x = Styles.X.getInt(style);
+                int width = Styles.WIDTH.getInt(style);
                 for (JsonNode line : getTextLayout(textNode)) {
-                    ObjectNode lineStyle = getComputedStyle(line);
-                    lineStyle.put("x", x + (width - lineStyle.path("width").intValue()) / 2);
+                    ObjectNode lineStyle = Styles.getComputedStyle(line);
+                    Styles.X.setInt(lineStyle, x + (width - Styles.WIDTH.getInt(lineStyle)) / 2);
                 }
                 break;
             }
             default: {
-                throw new IllegalArgumentException("text-align: " + textAlign.textValue());
+                throw new IllegalArgumentException("text-align: " + textAlign);
             }
+        }
+    }
+
+    protected int calculateHeight(ObjectNode textNode) {
+        int height = 0;
+        for (JsonNode line : getTextLayout(textNode)) {
+            height += Styles.LINE_HEIGHT.getInt(Styles.getComputedStyle(line));
+        }
+        return height;
+    }
+
+    protected void updateLayout(ObjectNode textNode) {
+        ObjectNode style = Styles.getComputedStyle(textNode);
+        if (Styles.HEIGHT.isNull(style)) {
+            Styles.HEIGHT.setInt(style, calculateHeight(textNode));
         }
     }
 
@@ -179,14 +194,10 @@ public abstract class AbstractChineseTextLayoutEngine<CONTEXT, FONT> implements 
         return (ArrayNode) node.path("textLayout");
     }
 
-    protected ObjectNode getComputedStyle(JsonNode node) {
-        return (ObjectNode) node.path("computedStyle");
-    }
-
     @Override
     public FONT getFont(CONTEXT context, JsonNode node) {
         FontMeta fontMeta = new FontMeta.Builder()
-                .withStyle(getComputedStyle(node))
+                .withStyle(Styles.getComputedStyle(node))
                 .get();
         return getFont(context, fontMeta);
     }

@@ -16,7 +16,7 @@ public interface TextLayoutEngine<CONTEXT, FONT> extends LayoutEngine<CONTEXT> {
 
     default int[] getCharacterWidths(FONT font, int[] codePoints, int offset, int length) {
         int[] characterWidths = new int[length];
-        for (int  i = 0, j = offset; i < characterWidths.length; i++, j++) {
+        for (int i = 0, j = offset; i < characterWidths.length; i++, j++) {
             characterWidths[i] = getCharacterWidth(font, codePoints[j]);
         }
         return characterWidths;
@@ -30,7 +30,7 @@ public interface TextLayoutEngine<CONTEXT, FONT> extends LayoutEngine<CONTEXT> {
 
     default int getCharactersHeight(FONT font, int[] codePoints, int offset, int length) {
         int lineHeight = 0;
-        for (int  i = offset; i < offset + length; i++) {
+        for (int i = offset; i < offset + length; i++) {
             lineHeight = Integer.max(lineHeight, getCharacterHeight(font, codePoints[i]));
         }
         return lineHeight;
