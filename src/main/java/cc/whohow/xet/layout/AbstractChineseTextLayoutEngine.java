@@ -107,8 +107,10 @@ public abstract class AbstractChineseTextLayoutEngine<CONTEXT, FONT> implements 
             return;
         }
         JsonNode lineHeight = Styles.LINE_HEIGHT.getValue(style);
-        for (JsonNode node : getTextLayout(textNode)) {
-            Styles.LINE_HEIGHT.setValue(Styles.getComputedStyle(node), lineHeight);
+        for (JsonNode line : getTextLayout(textNode)) {
+            ObjectNode lineStyle = Styles.getComputedStyle(line);
+            Styles.HEIGHT.setValue(lineStyle, lineHeight);
+            Styles.LINE_HEIGHT.setValue(lineStyle, lineHeight);
         }
     }
 
