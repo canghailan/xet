@@ -6,9 +6,9 @@ import cc.whohow.xet.engine.awt.layout.AWTImageLayoutEngine;
 import cc.whohow.xet.engine.awt.model.ColorFactory;
 import cc.whohow.xet.engine.awt.model.FontFamilyFactory;
 import cc.whohow.xet.engine.awt.model.ImageFactory;
-import cc.whohow.xet.engine.awt.render.AWTImageRenderEngine;
-import cc.whohow.xet.engine.awt.render.AWTTextRenderEngine;
+import cc.whohow.xet.engine.awt.render.*;
 import cc.whohow.xet.layout.ComponentLayoutEngine;
+import cc.whohow.xet.layout.NoopLayoutEngine;
 import cc.whohow.xet.model.RenderTreeBuilder;
 import cc.whohow.xet.model.Styles;
 import cc.whohow.xet.render.ComponentRenderEngine;
@@ -36,10 +36,22 @@ public class ImageXetEngine extends AbstractXetEngine<BufferedImage> {
         layoutEngine = new ComponentLayoutEngine<>();
         layoutEngine.addLayoutEngine("img", new AWTImageLayoutEngine<>());
         layoutEngine.addLayoutEngine("p", new AWTChineseTextLayoutEngine<>());
+        layoutEngine.addLayoutEngine("rect", new NoopLayoutEngine<>());
+        layoutEngine.addLayoutEngine("circle", new NoopLayoutEngine<>());
+        layoutEngine.addLayoutEngine("ellipse", new NoopLayoutEngine<>());
+        layoutEngine.addLayoutEngine("line", new NoopLayoutEngine<>());
+        layoutEngine.addLayoutEngine("polygon", new NoopLayoutEngine<>());
+        layoutEngine.addLayoutEngine("polyline", new NoopLayoutEngine<>());
 
         renderEngine = new ComponentRenderEngine<>();
         renderEngine.addRenderEngine("img", new AWTImageRenderEngine<>());
         renderEngine.addRenderEngine("p", new AWTTextRenderEngine<>());
+        renderEngine.addRenderEngine("rect", new AWTRectRenderEngine<>());
+        renderEngine.addRenderEngine("circle", new AWTCircleRenderEngine<>());
+        renderEngine.addRenderEngine("ellipse", new AWTEllipseRenderEngine<>());
+        renderEngine.addRenderEngine("line", new AWTLineRenderEngine<>());
+        renderEngine.addRenderEngine("polygon", new AWTPolygonRenderEngine<>());
+        renderEngine.addRenderEngine("polyline", new AWTPolylineRenderEngine<>());
     }
 
     @Override

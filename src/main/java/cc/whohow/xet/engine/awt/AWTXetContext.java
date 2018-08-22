@@ -13,7 +13,7 @@ import java.io.Closeable;
 import java.util.function.Function;
 
 public abstract class AWTXetContext implements XetContext, Closeable {
-    protected final Graphics graphics;
+    protected final Graphics2D graphics;
     protected Document document;
     protected JsonNode renderTree;
     protected Function<String, Color> colorFactory;
@@ -21,7 +21,7 @@ public abstract class AWTXetContext implements XetContext, Closeable {
     protected Function<FontMeta, Font> fontFactory;
     protected Function<FontMeta, FontMetrics> fontMetricsFactory;
 
-    public AWTXetContext(Graphics graphics) {
+    public AWTXetContext(Graphics2D graphics) {
         this.graphics = graphics;
     }
 
@@ -43,7 +43,7 @@ public abstract class AWTXetContext implements XetContext, Closeable {
         this.renderTree = renderTree;
     }
 
-    public Graphics getGraphics() {
+    public Graphics2D getGraphics() {
         return graphics;
     }
 

@@ -10,7 +10,7 @@ public class ImageXetContext extends AWTXetContext {
     protected LayoutEngine<ImageXetContext> layoutEngine;
     protected RenderEngine<ImageXetContext> renderEngine;
 
-    public ImageXetContext(Graphics graphics) {
+    public ImageXetContext(Graphics2D graphics) {
         super(graphics);
     }
 

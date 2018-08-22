@@ -27,6 +27,9 @@ public class Styles {
     public static Style FONT_WEIGHT = new Style("font-weight");
     public static Style.IntValue LINE_HEIGHT = new Style.IntValue("line-height");
     public static Style TEXT_ALIGN = new Style("text-align");
+    public static Style FILL = new Style("fill");
+    public static Style STROKE = new Style("stroke");
+    public static Style.IntValue STROKE_WIDTH = new Style.IntValue("stroke-width");
 
     public static ObjectNode getStyle(JsonNode node) {
         return (ObjectNode) node.path("style");

@@ -22,6 +22,6 @@ public class FontFactory implements Function<FontMeta, Font> {
             style |= Font.ITALIC;
         }
         return fontFamilyFactory.apply(fontMeta.getFontFamily())
-                .deriveFont(style, (float) fontMeta.getFontSize());
+                .deriveFont(style, fontMeta.getFontSize());
     }
 }
