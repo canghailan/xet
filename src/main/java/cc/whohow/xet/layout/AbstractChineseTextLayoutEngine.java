@@ -54,6 +54,8 @@ public abstract class AbstractChineseTextLayoutEngine<CONTEXT, FONT> implements 
         JsonNode color = Styles.COLOR.getValue(style);
         JsonNode fontFamily = Styles.FONT_FAMILY.getValue(style);
         JsonNode fontSize = Styles.FONT_SIZE.getValue(style);
+        JsonNode fontStyle = Styles.FONT_STYLE.getValue(style);
+        JsonNode fontWeight = Styles.FONT_WEIGHT.getValue(style);
 
         int[] codePoints = line.codePoints().toArray();
         int[] characterWidths = getCharacterWidths(font, codePoints);
@@ -91,6 +93,8 @@ public abstract class AbstractChineseTextLayoutEngine<CONTEXT, FONT> implements 
             Styles.COLOR.setValue(computedStyle, color);
             Styles.FONT_FAMILY.setValue(computedStyle, fontFamily);
             Styles.FONT_SIZE.setValue(computedStyle, fontSize);
+            Styles.FONT_STYLE.setValue(computedStyle, fontStyle);
+            Styles.FONT_WEIGHT.setValue(computedStyle, fontWeight);
             node.set("computedStyle", computedStyle);
             textLayout.add(node);
 

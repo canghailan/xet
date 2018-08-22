@@ -14,7 +14,14 @@ public class FontFactory implements Function<FontMeta, Font> {
 
     @Override
     public Font apply(FontMeta fontMeta) {
+        int style = Font.PLAIN;
+        if ("bold".equals(fontMeta.getFontWeight())) {
+            style |= Font.BOLD;
+        }
+        if ("italic".equals(fontMeta.getFontStyle())) {
+            style |= Font.ITALIC;
+        }
         return fontFamilyFactory.apply(fontMeta.getFontFamily())
-                .deriveFont((float) fontMeta.getFontSize());
+                .deriveFont(style, (float) fontMeta.getFontSize());
     }
 }

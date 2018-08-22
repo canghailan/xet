@@ -23,6 +23,8 @@ public class Styles {
     public static Style COLOR = new Style("color");
     public static Style FONT_FAMILY = new Style("font-family");
     public static Style.IntValue FONT_SIZE = new Style.IntValue("font-size");
+    public static Style FONT_STYLE = new Style("font-style");
+    public static Style FONT_WEIGHT = new Style("font-weight");
     public static Style.IntValue LINE_HEIGHT = new Style.IntValue("line-height");
     public static Style TEXT_ALIGN = new Style("text-align");
 
