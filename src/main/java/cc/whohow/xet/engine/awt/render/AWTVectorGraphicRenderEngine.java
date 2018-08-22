@@ -14,11 +14,15 @@ public abstract class AWTVectorGraphicRenderEngine<CONTEXT extends AWTXetContext
         ObjectNode style = Styles.getComputedStyle(node);
 
         Graphics2D g = context.getGraphics();
-        Shape shape = getShape(context, style);
+        Shape shape = getShape(context, node);
 
-        g.setStroke(getStroke(context, style));
-        g.setColor(getStrokeColor(context, style));
-        g.draw(shape);
+        Stroke stroke = getStroke(context, style);
+        if (stroke != null) {
+            Color strokeColor = getStrokeColor(context, style);
+            g.setStroke(stroke);
+            g.setColor(strokeColor);
+            g.draw(shape);
+        }
 
         Color fill = getFillColor(context, style);
         if (fill != null) {
@@ -28,6 +32,10 @@ public abstract class AWTVectorGraphicRenderEngine<CONTEXT extends AWTXetContext
     }
 
     protected Stroke getStroke(CONTEXT context, ObjectNode style) {
+        int strokeWidth = Styles.STROKE_WIDTH.getInt(style, 1);
+        if (strokeWidth == 0) {
+            return null;
+        }
         return new BasicStroke(Styles.STROKE_WIDTH.getInt(style, 1));
     }
 

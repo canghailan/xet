@@ -19,8 +19,12 @@ public class AWTPolylineRenderEngine<CONTEXT extends AWTXetContext> extends AWTP
         int[] yPoints = points.getY();
 
         Graphics2D g = context.getGraphics();
-        g.setStroke(getStroke(context, style));
-        g.setColor(getStrokeColor(context, style));
-        g.drawPolyline(xPoints, yPoints, nPoints);
+        Stroke stroke = getStroke(context, style);
+        if (stroke != null) {
+            Color strokeColor = getStrokeColor(context, style);
+            g.setStroke(stroke);
+            g.setColor(strokeColor);
+            g.drawPolyline(xPoints, yPoints, nPoints);
+        }
     }
 }

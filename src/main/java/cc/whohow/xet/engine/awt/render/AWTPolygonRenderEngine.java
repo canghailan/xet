@@ -19,9 +19,13 @@ public class AWTPolygonRenderEngine<CONTEXT extends AWTXetContext> extends AWTVe
         int[] yPoints = points.getY();
 
         Graphics2D g = context.getGraphics();
-        g.setStroke(getStroke(context, style));
-        g.setColor(getStrokeColor(context, style));
-        g.drawPolygon(xPoints, yPoints, nPoints);
+        Stroke stroke = getStroke(context, style);
+        if (stroke != null) {
+            Color strokeColor = getStrokeColor(context, style);
+            g.setStroke(stroke);
+            g.setColor(strokeColor);
+            g.drawPolygon(xPoints, yPoints, nPoints);
+        }
 
         Color fill = getFillColor(context, style);
         if (fill != null) {
