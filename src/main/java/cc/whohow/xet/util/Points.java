@@ -45,6 +45,9 @@ public class Points {
     }
 
     public Points translate(int x, int y) {
+        if (x == 0 && y == 0) {
+            return this;
+        }
         int[] xy = Arrays.copyOf(this.xy, this.xy.length);
         for (int i = 0; i < xy.length; i += 2) {
             xy[i] += x;
