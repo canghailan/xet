@@ -12,8 +12,10 @@ public class AWTPolylineRenderEngine<CONTEXT extends AWTXetContext> extends AWTP
     @Override
     public void render(CONTEXT context, JsonNode node) {
         ObjectNode style = Styles.getComputedStyle(node);
+        int x = Styles.X.getInt(style, 0);
+        int y = Styles.Y.getInt(style, 0);
 
-        Points points = getPoints(context, node);
+        Points points = getPoints(context, node).translate(x, y);
         int nPoints = points.size();
         int[] xPoints = points.getX();
         int[] yPoints = points.getY();

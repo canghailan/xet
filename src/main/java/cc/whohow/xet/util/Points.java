@@ -1,5 +1,6 @@
 package cc.whohow.xet.util;
 
+import java.util.Arrays;
 import java.util.regex.Pattern;
 
 public class Points {
@@ -19,10 +20,18 @@ public class Points {
         return xy.length / 2;
     }
 
+    public int getX(int index) {
+        return xy[index * 2];
+    }
+
+    public int getY(int index) {
+        return xy[index * 2 + 1];
+    }
+
     public int[] getX() {
         int[] x = new int[size()];
         for (int i = 0; i < x.length; i++) {
-            x[i] = xy[i * 2];
+            x[i] = getX(i);
         }
         return x;
     }
@@ -30,8 +39,17 @@ public class Points {
     public int[] getY() {
         int[] y = new int[size()];
         for (int i = 0; i < y.length; i++) {
-            y[i] = xy[i * 2 + 1];
+            y[i] = getY(i);
         }
         return y;
+    }
+
+    public Points translate(int x, int y) {
+        int[] xy = Arrays.copyOf(this.xy, this.xy.length);
+        for (int i = 0; i < xy.length; i += 2) {
+            xy[i] += x;
+            xy[i + 1] += y;
+        }
+        return new Points(xy);
     }
 }

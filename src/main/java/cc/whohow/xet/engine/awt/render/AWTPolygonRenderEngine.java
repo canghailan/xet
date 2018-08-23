@@ -12,8 +12,10 @@ public class AWTPolygonRenderEngine<CONTEXT extends AWTXetContext> extends AWTVe
     @Override
     public void render(CONTEXT context, JsonNode node) {
         ObjectNode style = Styles.getComputedStyle(node);
+        int x = Styles.X.getInt(style, 0);
+        int y = Styles.Y.getInt(style, 0);
 
-        Points points = getPoints(context, node);
+        Points points = getPoints(context, node).translate(x, y);
         int nPoints = points.size();
         int[] xPoints = points.getX();
         int[] yPoints = points.getY();
@@ -42,7 +44,11 @@ public class AWTPolygonRenderEngine<CONTEXT extends AWTXetContext> extends AWTVe
 
     @Override
     protected Polygon getShape(CONTEXT context, JsonNode node) {
-        Points points = getPoints(context, node);
+        ObjectNode style = Styles.getComputedStyle(node);
+        int x = Styles.X.getInt(style, 0);
+        int y = Styles.Y.getInt(style, 0);
+
+        Points points = getPoints(context, node).translate(x, y);
         int nPoints = points.size();
         int[] xPoints = points.getX();
         int[] yPoints = points.getY();

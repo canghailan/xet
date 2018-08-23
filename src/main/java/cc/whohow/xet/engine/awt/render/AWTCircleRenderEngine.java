@@ -1,7 +1,9 @@
 package cc.whohow.xet.engine.awt.render;
 
 import cc.whohow.xet.engine.awt.AWTXetContext;
+import cc.whohow.xet.model.Styles;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import java.awt.geom.Ellipse2D;
 
@@ -9,9 +11,11 @@ public class AWTCircleRenderEngine<CONTEXT extends AWTXetContext> extends AWTVec
     @Override
     protected Ellipse2D getShape(CONTEXT context, JsonNode node) {
         JsonNode props = node.path("props");
-        int cx = props.path("cx").asInt();
-        int cy = props.path("cy").asInt();
         int r = props.path("r").asInt();
-        return new Ellipse2D.Float(cx, cy, r * 2, r * 2);
+
+        ObjectNode style = Styles.getComputedStyle(node);
+        int x = Styles.X.getInt(style, 0);
+        int y = Styles.Y.getInt(style, 0);
+        return new Ellipse2D.Float(x, y, r * 2, r * 2);
     }
 }
