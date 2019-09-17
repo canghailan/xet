@@ -68,6 +68,9 @@ public class ImageXetEngine extends AbstractXetEngine<BufferedImage> {
         Graphics2D g = image.createGraphics();
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        g.setColor(Color.WHITE);
+        g.fillRect(0, 0, image.getWidth(), image.getHeight());
+        g.setColor(Color.BLACK);
 
         try (ImageXetContext context = new ImageXetContext(g)) {
             context.setFontFactory(fontFactory);
